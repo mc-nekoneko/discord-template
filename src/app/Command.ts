@@ -21,7 +21,7 @@ export class CommandManager {
     private async syncCommands(app: App): Promise<void> {
         if (this.commands.size === 0) return
 
-        const rawData = Array.from(this.commands.values()).map((cmd) => cmd._builder().toJSON())
+        const rawData = Array.from(this.commands.values()).map((cmd) => cmd.builder.toJSON())
 
         const clientId = app.getClientId()
         const guildIds = app.getClient().guilds.cache.map((guild) => guild.id)
@@ -54,6 +54,10 @@ export class CommandManager {
     }
 
     public registerCommand(command: Command): void {
-        this.commands.set(command._builder().name, command)
+        if (this.commands.has(command.builder.name)) {
+            throw new Error(`Command ${command.builder.name} is already registered.`)
+        }
+        
+        this.commands.set(command.builder.name, command)
     }
 }

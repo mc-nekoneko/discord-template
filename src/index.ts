@@ -7,7 +7,7 @@ dotenv.config()
 
 const app = new App(process.env.DISCORD_TOKEN, process.env.CLIENT_ID)
 
-features.init(app)
+features.load(app)
 
 process.on('SIGINT', () => {
     app.destroy()

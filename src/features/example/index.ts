@@ -1,8 +1,19 @@
 import { App } from '../../app'
-import * as command from './Command'
-import * as event from './Event'
+import { Message, CommandInteraction } from 'discord.js'
+import { SlashCommandBuilder } from '@discordjs/builders'
 
-export function init(app: App): void {
-    app.getCommandManager().registerCommand(command.default)
-    app.getClient().on('messageCreate', event.messageCreate)
+export default (app: App): void => {
+    app.getCommandManager().registerCommand({
+        builder: new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!'),
+
+        execute: async (interaction: CommandInteraction): Promise<void> => {
+            interaction.reply('Pong!')
+        },
+    })
+
+    app.getClient().on('messageCreate', (message: Message) => {
+        if (message.content === 'ping') {
+            message.reply('Pong!')
+        }
+    })
 }

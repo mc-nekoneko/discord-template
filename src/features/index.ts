@@ -1,6 +1,11 @@
 import { App } from '../app'
-import * as example from './example'
+import * as fs from 'fs'
 
-export function init(app: App) {
-    example.init(app)
+export function load(app: App) {
+    const features = fs.readdirSync(__dirname).filter((file) => !file.endsWith('.js'))
+
+    for (const file of features) {
+        const feature = require(`./${file}`).default
+        feature(app)
+    }
 }
