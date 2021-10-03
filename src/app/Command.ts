@@ -3,6 +3,7 @@ import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v9'
 import { Interaction } from 'discord.js'
 import { Command } from '../structures'
+import { SlashCommandBuilder } from '@discordjs/builders'
 
 export class CommandManager {
     private readonly rest: REST
@@ -12,28 +13,35 @@ export class CommandManager {
     public constructor(app: App) {
         this.rest = app.getRest()
 
-        app.getClient().on('ready', async () => this.syncCommands(app))
-        app.getClient().on('interactionCreate', async (interaction: Interaction) => {
-            return this.onCommandHandler(interaction)
-        })
+        app.getClient().on('ready', () => this.onCommandSync(app))
+        app.getClient().on('interactionCreate', (interaction) => this.onCommandHandler(interaction))
     }
 
-    private async syncCommands(app: App): Promise<void> {
+    private async onCommandSync(app: App): Promise<void> {
         if (this.commands.size === 0) return
-
-        const rawData = Array.from(this.commands.values()).map((cmd) => cmd.builder.toJSON())
 
         const clientId = app.getClientId()
         const guildIds = app.getClient().guilds.cache.map((guild) => guild.id)
+        const builders = new Map<string, SlashCommandBuilder[]>()
+
+        Array.from(this.commands.values()).forEach((command) => {
+            guildIds.forEach((guildId) => {
+                const builder = command.createBuilder(app, guildId)
+                if (!builders.has(guildId)) builders.set(guildId, [])
+
+                builders.get(guildId)?.push(builder)
+            })
+        })
 
         // APIに負荷がかかるのでよろしくない
         // Botが参加しているギルドの数が多ければapplicationCommandsを使うべきだ
 
-        for (const guildId of guildIds) {
+        builders.forEach(async (builders, guildId) => {
+            const rawData = builders.map((builder) => builder.toJSON())
             await this.rest.put(Routes.applicationGuildCommands(clientId, guildId), {
                 body: rawData,
             })
-        }
+        })
     }
 
     private async onCommandHandler(interaction: Interaction): Promise<void> {
@@ -54,10 +62,10 @@ export class CommandManager {
     }
 
     public registerCommand(command: Command): void {
-        if (this.commands.has(command.builder.name)) {
-            throw new Error(`Command ${command.builder.name} is already registered.`)
+        if (this.commands.has(command.getName())) {
+            throw new Error(`Command ${command.getName()} is already registered.`)
         }
 
-        this.commands.set(command.builder.name, command)
+        this.commands.set(command.getName(), command)
     }
 }

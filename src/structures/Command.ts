@@ -1,8 +1,19 @@
 import { CommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { App } from '../app'
 
-export interface Command {
-    builder: SlashCommandBuilder
+export abstract class Command {
+    protected readonly name: string
 
-    execute(interaction: CommandInteraction): Promise<void>
+    constructor(name: string) {
+        this.name = name
+    }
+
+    public getName(): string {
+        return this.name
+    }
+
+    public abstract createBuilder(app: App, guildId: string): SlashCommandBuilder
+
+    public abstract execute(event: CommandInteraction): Promise<void>
 }
