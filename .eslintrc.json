@@ -11,9 +11,7 @@
         "plugin:prettier/recommended",
         "prettier/@typescript-eslint"
     ],
-    "plugins": [
-        "prettier"
-    ],
+    "plugins": ["prettier"],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"

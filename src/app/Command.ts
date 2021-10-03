@@ -57,7 +57,7 @@ export class CommandManager {
         if (this.commands.has(command.builder.name)) {
             throw new Error(`Command ${command.builder.name} is already registered.`)
         }
-        
+
         this.commands.set(command.builder.name, command)
     }
 }
