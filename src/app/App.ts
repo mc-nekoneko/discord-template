@@ -18,7 +18,13 @@ export class App {
         this.token = token
         this.clientId = clientId
 
-        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] })
+        this.client = new Client({
+            intents: [
+                Intents.FLAGS.GUILDS,
+                Intents.FLAGS.GUILD_MESSAGES,
+                Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+            ],
+        })
         this.client.on('ready', this.onReady)
 
         this.rest = new REST({ version: '9' }).setToken(token)
@@ -30,11 +36,12 @@ export class App {
         console.log('Ready!')
     }
 
-    public start(): void {
-        this.client.login(this.token)
+    public async start(): Promise<void> {
+        await this.client.login(this.token)
     }
 
-    public destroy(): void {
+    public async destroy(): Promise<void> {
+        console.log('App destroying')
         this.client.destroy()
     }
 
